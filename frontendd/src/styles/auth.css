@@ -1,0 +1,118 @@
+/* auth.css
+
+/* Centered form styling */
+/* body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f3f4f6; /* Soft gray background */
+  /* font-family: Arial, sans-serif;
+} */ 
+
+/* h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #1f2937; /* Dark gray for titles */
+  /* margin-bottom: 1.5rem;
+} */
+ 
+
+/* form {
+  background: #ffffff; /* White background for form */
+  /* border-radius: 8px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15); /* Soft shadow */
+  /* text-align: center;
+} */ 
+
+/* Input styles */
+/* input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="date"], */
+/* select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  border: 1px solid #d1d5db; /* Light border */
+  /* font-size: 1rem;
+  transition: border-color 0.3s ease;
+} */ 
+/* 
+input:focus,
+select:focus {
+  border-color: #2563eb; 
+  outline: none;
+}
+
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"] {
+  background-color: #2563eb; 
+}
+
+button[type="button"] {
+  background-color: #6b7280; 
+}
+
+button[type="button"]:hover,
+button[type="submit"]:hover {
+  background-color: #1e3a8a; 
+}
+
+button:disabled {
+  background-color: #9ca3af; 
+  cursor: not-allowed;
+}
+
+
+button[type="button"]:nth-of-type(1) {
+  background-color: #10b981; 
+}
+
+button[type="button"]:nth-of-type(1):hover {
+  background-color: #047857; 
+}
+
+
+button[type="button"]:nth-of-type(2) {
+  background-color: transparent;
+  color: #2563eb;
+  font-size: 0.9rem;
+  padding: 0;
+  border: none;
+  margin-top: 0;
+}
+
+button[type="button"]:nth-of-type(2):hover {
+  text-decoration: underline;
+}
+
+
+@media (max-width: 500px) {
+  form {
+    padding: 1.5rem;
+  }
+
+  input,
+  button {
+    font-size: 0.9rem;
+  }
+}  */

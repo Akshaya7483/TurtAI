@@ -1,0 +1,102 @@
+@import './colors.css';
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color:#fff;
+    
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+#navbar-title-unique {
+    font-size: 1.8rem;
+    color: var(--text-color);
+    font-weight: bold;
+    margin: 0;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: auto;
+    
+    
+}
+
+.nav-links li {
+   padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links li a:hover,
+.nav-links li:hover {
+    color: var(--highlight-color);
+    text-decoration: underline;
+    font-size: 18px;
+    font-style: bold;
+}
+
+#notification-toggle-btn,
+#logout-btn-unique {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1rem;
+    padding: 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+#notification-toggle-btn:disabled,
+#logout-btn-unique:disabled {
+    background-color: var(--button-disabled-color);
+    cursor: not-allowed;
+}
+
+#notification-toggle-btn i {
+    margin-right: 8px;
+}
+
+#notification-toggle-btn:hover,
+#logout-btn-unique:hover {
+    background-color: var(--highlight-color);
+    
+    border:2px solid var(--primary-color);
+    color:var(--text-color);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-links li {
+        padding: 12px;
+    }
+
+    #navbar-title-unique {
+        font-size: 1.5rem;
+    }
+
+    #notification-toggle-btn {
+        margin-top: 10px;
+    }
+}

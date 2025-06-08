@@ -1,0 +1,84 @@
+/* General Container Styling */
+@import './colors.css';
+#grant-history-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  background-color: rgba(144, 238, 144, 0.8); /* Transparent pastel green */
+  backdrop-filter: blur(100px); /* Blur effect */
+  -webkit-backdrop-filter: blur(100px); /* Safari compatibility */
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Title Styling */
+#grant-history-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #c8e6c9; /* Subtle green underline */
+  padding-bottom: 0.5rem;
+}
+
+/* List Styling */
+#grant-history-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.grant-history-item {
+  background-color: var(--background-color); /* Lighter pastel green */
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #99e49c; /* Light green border */
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grant-history-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.grant-history-item p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+
+.grant-history-item p strong {
+  color: #388e3c; /* Slightly darker green for emphasis */
+}
+
+/* Loading and Error Messages */
+.grant-history-loading,
+.grant-history-error {
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 1rem 0;
+  color: #d32f2f; /* Red for error text */
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #grant-history-container {
+    padding: 1.5rem;
+  }
+
+  #grant-history-title {
+    font-size: 1.75rem;
+  }
+
+  .grant-history-item p {
+    font-size: 0.9rem;
+  }
+}
+.grant-history-list p{
+  display: flex;
+}

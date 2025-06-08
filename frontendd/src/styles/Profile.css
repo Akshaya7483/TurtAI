@@ -1,0 +1,109 @@
+/* Profile container */
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  /* Profile header */
+  .profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid #00796b;
+    margin-bottom: 10px;
+    object-fit: cover;
+    overflow: hidden;
+  }
+  
+  .profile-header h2 {
+    margin: 0;
+    font-size: 1.8em;
+    color: #333;
+  }
+  
+  .profile-header p {
+    margin: 2px 0;
+    font-size: 1em;
+    color: #666;
+  }
+  
+  /* Avatar selection section */
+  .profile-avatar-selection {
+    margin-top: 20px;
+    overflow: hidden;
+  }
+  
+  .profile-avatar-selection h3 {
+    font-size: 1.2em;
+    color: #444;
+    margin-bottom: 10px;
+  }
+  
+  .avatar-options {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    overflow: hidden;
+  }
+  
+  .avatar-option {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .avatar-option.selected {
+    border: 2px solid #00796b;
+    transform: scale(1.1);
+  }
+  
+  .avatar-option:hover {
+    transform: scale(1.1);
+    border: 2px solid #ccc;
+  }
+  
+  /* Grants applied section */
+  .profile-grants {
+    margin-top: 30px;
+    text-align: left;
+  }
+  
+  .profile-grants h3 {
+    font-size: 1.3em;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .profile-grants p {
+    font-size: 1em;
+    color: #555;
+    margin: 0;
+  }
+  
+  .profile-grants ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .profile-grants li {
+    font-size: 1em;
+    color: #555;
+    margin: 5px 0;
+  }
+  

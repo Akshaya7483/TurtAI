@@ -1,0 +1,25 @@
+/* Turtle container styles */
+.turtle {
+    position: fixed; /* Fixed position to float over all other page content */
+    top: 70px; /* Adjust to keep the turtle below the navbar */
+    left: -150px; /* Start turtle from outside the viewport on the left */
+    z-index: 9999; /* Ensure turtle floats above all content */
+    animation: moveRight 60s linear infinite; /* Slow animation, lasting 60 seconds, running infinitely */
+  }
+  
+  /* Turtle image styles */
+  .turtle-image {
+    width: 70px; /* Increase the width to make the turtle bigger */
+    height: auto; /* Keep aspect ratio */
+  }
+  
+  /* Keyframes for moving turtle from left to right */
+  @keyframes moveRight {
+    0% {
+      left: -150px; /* Adjust to match the width of the turtle image */
+    }
+    100% {
+      left: 100vw; /* Move completely across to the right side of the viewport */
+    }
+  }
+  

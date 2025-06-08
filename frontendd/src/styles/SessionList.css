@@ -1,0 +1,125 @@
+/* src/styles/SessionList.css */
+
+/* Container for the session list */
+/* body {
+  background-color: lightblue;
+} */
+
+
+#session-list-container {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background-color: #f0f8ff; /* Alice Blue for background */
+    border-right: 2px solid #2a9d8f; /* Teal border */
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  /* Header for the session list */
+  #session-list-container h3 {
+    color: #264653; /* Dark teal */
+    font-size: 18px;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #e76f51; /* Coral underline */
+    padding-bottom: 5px;
+  }
+  
+  /* New session button */
+  #session-list-container button {
+    width: 100%;
+    background-color: #2a9d8f; /* Teal background */
+    color: #ffffff; /* White text */
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+  }
+  
+  #session-list-container button:hover {
+    background-color: #264653; /* Dark teal on hover */
+  }
+  
+  /* List of sessions */
+  #session-list-container .session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Individual session item */
+  #session-list-container .session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e9c46a; /* Mustard border */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  #session-list-container .session-item.active {
+    background-color: #e9c46a; /* Mustard yellow for active session */
+    color: #ffffff; /* White text */
+    border: 1px solid #f4a261; /* Orange border for active session */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  #session-list-container .session-item:hover {
+    background-color: #f4a261; /* Orange background on hover */
+  }
+  
+  /* Session name */
+  #session-list-container .session-item span {
+    flex: 1;
+    color: #264653; /* Dark teal for text */
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Edit and delete buttons */
+  #session-list-container .session-item button {
+    margin-left: 5px;
+    padding: 5px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.3s ease;
+  }
+  
+  #session-list-container .session-item button:hover {
+    color: #e76f51; /* Coral color on hover */
+  }
+  
+  #session-list-container .session-item input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #264653; /* Dark teal border */
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    #session-list-container {
+      padding: 10px;
+    }
+  
+    #session-list-container .session-item {
+      font-size: 12px;
+    }
+  
+    #session-list-container h3 {
+      font-size: 16px;
+    }
+  }
+  

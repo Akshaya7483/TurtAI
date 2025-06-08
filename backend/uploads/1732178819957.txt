@@ -1,0 +1,548 @@
+library.js:
+import React, { useEffect, useState } from "react";
+
+const Library = () => {
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const response = await fetch("api/uploads");
+        if (response.ok) {
+          const data = await response.json();
+          setFiles(data);
+        } else {
+          alert("Failed to fetch uploaded files.");
+        }
+      } catch (error) {
+        console.error("Error fetching files:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, []);
+
+  return (
+    <div>
+      <h2>Library</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : files.length === 0 ? (
+        <p>No files uploaded yet.</p>
+      ) : (
+        <ul>
+          {files.map((file, index) => (
+            <li key={index}>
+              <a
+                href={`http://localhost:8081/uploads/${file}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {file}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default Library;
+
+server.js:
+const express = require("express");
+const cors = require("cors");
+const { exec } = require("child_process");
+const db = require("./database/db");
+const cron = require("node-cron");
+const multer = require("multer");
+const path = require("path");
+const axios = require('axios');
+const fs = require('fs')
+const csvParser = require('csv-parser');
+
+const app = express();
+const PORT = 8081;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Log requests for debugging
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request to ${req.url}`);
+  next();
+});
+
+// Set up Multer storage for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads"); // Store files in the 'uploads' folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Name the file with a timestamp
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Serve static files from 'uploads' folder
+app.use("/uploads", express.static("uploads"));
+
+// Routes
+app.use('/auth', require('./routes/authRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/chat', require('./routes/chatRoutes'));
+const grantRoutes = require("./routes/grantroutes");
+app.use("/api", grantRoutes);
+
+// Fetch all grants data from the grants table
+app.get("/api/announcements", (req, res) => {
+  db.all("SELECT * FROM grants", (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Failed to retrieve grants data' });
+    res.json(rows);
+  });
+});
+
+// Fetch a single grant's details based on ID
+app.get("/api/grants/:grantId", (req, res) => {
+  const grantId = req.params.grantId;
+  db.get("SELECT * FROM grants WHERE id = ?", [grantId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to retrieve grant data" });
+    }
+    if (!row) {
+      return res.status(404).json({ error: "Grant not found" });
+    }
+    res.json(row);
+  });
+});
+
+// Record user's grant click history
+app.post("/api/record-grant-click", (req, res) => {
+  const { user_id, grant_id } = req.body;
+
+  // Insert the clicked grant into the history table
+  db.run(
+    "INSERT INTO user_grant_history (user_id, grant_id) VALUES (?, ?)",
+    [user_id, grant_id],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to save grant click history' });
+      }
+      res.status(200).json({ message: 'Grant click history saved' });
+    }
+  );
+});
+
+// Fetch user's grant click history
+app.get("/api/user-grant-history/:user_id", (req, res) => {
+  const user_id = req.params.user_id;
+  db.all(
+    "SELECT grants.title, grants.organization, grants.grant_amount, grants.deadline, user_grant_history.clicked_at FROM user_grant_history JOIN grants ON user_grant_history.grant_id = grants.id WHERE user_grant_history.user_id = ?",
+    [user_id],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to retrieve grant click history' });
+      }
+      res.json(rows);
+    }
+  );
+});
+
+// Endpoint for file upload
+app.post("/api/upload-file", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: "No file uploaded." });
+  }
+  
+  // File is uploaded successfully
+  res.json({
+    success: true,
+    fileName: req.file.filename,
+    filePath: `./uploads/${req.file.filename}`, // Path to the uploaded file
+  });
+});
+
+const { spawn } = require('child_process');
+
+app.post("/api/chat", (req, res) => {
+  const { model, messages } = req.body;
+  console.log("Messages received:", messages);
+  let Turt=model
+  let msg = messages
+
+  if (model==="Turt-L"){
+    const grantsJson = []; // Variable to store the JSON data
+
+    // Read and parse the CSV file
+    fs.createReadStream('./grants.csv') // Adjust the path if necessary
+      .pipe(csvParser())
+      .on('data', (row) => {
+        grantsJson.push(row); // Push each row to the JSON array
+      })
+      .on('end', () => {
+        console.log("CSV file successfully processed.");
+        console.log("JSON Data:", grantsJson);
+        
+        Turt="Turt"
+        msg = {
+          grants: grantsJson,  // Parsed grants data
+          messages: messages   // Incoming messages
+        };
+        // Use the grantsJson variable here for further processing
+      })
+      .on('error', (error) => {
+        console.error("Error reading or parsing the CSV file:", error);
+      });
+  }
+  // Prepare the curl command to send the request to Ollama
+  const curlCommand = 'curl';
+  const curlArgs = [
+    '-s', 
+    'http://localhost:11434/api/chat', 
+    '-d', `{
+      "model": "Turt",
+      "messages": ${JSON.stringify(msg)}
+    }`
+  ];
+
+  // Spawn the curl process to stream output
+  const curlProcess = spawn(curlCommand, curlArgs);
+
+  let responseBuffer = '';
+
+  curlProcess.stdout.on('data', (data) => {
+    // Accumulate data as it arrives
+    responseBuffer += data.toString();
+    
+    // Log partial response
+    console.log("Partial Ollama API Response:", responseBuffer);
+    
+    try {
+      // Process and parse any available data
+      const lines = responseBuffer.split("\n").filter(line => line.trim() !== "");
+      const parsedLines = lines.map(line => {
+        try {
+          return JSON.parse(line); 
+        } catch (e) {
+          console.error("Error parsing response chunk:", e);
+          return null; 
+        }
+      }).filter(line => line !== null);
+
+      // Combine the parsed content into a single response
+      const combinedResponse = parsedLines.map(chunk => chunk.message.content).join(" ");
+      
+      if (combinedResponse) {
+        // Send immediate response to client as soon as we have some content
+        res.json({ message: { role: "assistant", content: combinedResponse } });
+        responseBuffer = '';  // Reset buffer after response is sent
+      }
+    } catch (parseError) {
+      console.error("Error processing data:", parseError);
+    }
+  });
+
+  curlProcess.stderr.on('data', (data) => {
+    console.error("Curl command error:", data.toString());
+  });
+
+  curlProcess.on('error', (error) => {
+    console.error("Error spawning curl command:", error);
+    res.status(500).json({ error: "Failed to fetch response from Ollama" });
+  });
+
+  curlProcess.on('close', (code) => {
+    if (code !== 0) {
+      console.error(`Curl command failed with code ${code}`);
+      res.status(500).json({ error: "Curl command failed" });
+    }
+  });
+});
+
+
+
+
+
+// Backend endpoint to handle chat
+// app.post("/api/chat", (req, res) => {
+//   const { model, messages } = req.body;
+//   console.log(messages)
+
+//   // Prepare the curl command
+//   const curlCommand = `
+//     curl http://localhost:11434/api/chat -d '{
+//       "model": "mario",
+//       "messages": ${JSON.stringify(messages)}
+//     }'
+//   `;
+
+//   // Execute the curl command
+//   exec(curlCommand, (error, stdout, stderr) => {
+//     if (error) {
+//       console.error("Error executing curl command:", error);
+//       return res.status(500).json({ error: "Failed to fetch response from Ollama" });
+//     }
+
+//     if (stderr) {
+//       console.error("Curl command error output:", stderr);
+//     }
+
+//     try {
+//       // Parse and send the JSON response
+//       const lines = stdout.split("\n").filter((line) => line.trim() !== ""); // Handle streaming output
+//       const parsedLines = lines.map((line) => JSON.parse(line)); // Parse each chunk
+//       const combinedResponse = parsedLines.map((chunk) => chunk.message.content).join(" "); // Combine message content
+//       res.json({ message: { role: "assistant", content: combinedResponse } });
+//     } catch (parseError) {
+//       console.error("Error parsing curl response:", parseError);
+//       res.status(500).json({ error: "Failed to parse response from Ollama" });
+//     }
+//   });
+// });
+
+// Schedule the Python scraper to run every 10 minutes
+cron.schedule("*/10 * * * *", () => {
+  exec("python3 ./scripts/scrapeGrants.py", (error, stdout, stderr) => {
+    if (error) {
+      console.error("Error running Python script:", error, stderr);
+    } else {
+      console.log("Python script output:", stdout);
+    }
+  });
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+
+fileuploadbutton.js:
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const FileUploadButton = () => {
+  const [file, setFile] = useState();
+  const navigate = useNavigate();
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Please select a file before uploading.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:8081/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("File uploaded successfully!");
+        setFile(null); // Clear file after upload
+      } else {
+        alert("Failed to upload file.");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
+  return (
+    <div>
+      <label
+        htmlFor="fileUpload"
+        style={{
+          cursor: "pointer",
+          padding: "10px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          display: "inline-block",
+        }}
+      >
+        Select File
+      </label>
+      <input
+        type="file"
+        id="fileUpload"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
+      <br />
+      {file && (
+        <div style={{ marginTop: "10px", fontStyle: "italic" }}>
+          Selected file: {file.name}
+        </div>
+      )}
+      <button
+        onClick={handleUpload}
+        style={{
+          marginTop: "10px",
+          padding: "10px 15px",
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Upload
+      </button>
+      <button
+        onClick={() => navigate("/library")}
+        style={{
+          marginTop: "10px",
+          marginLeft: "10px",
+          padding: "10px 15px",
+          backgroundColor: "#FFC107",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Go to Library
+      </button>
+    </div>
+  );
+};
+
+export default FileUploadButton;
+
+api.js:
+// src/services/api.js
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://localhost:8081", // Update with your backend URL if different
+});
+
+// Auth API
+export const login = (data) => api.post("/auth/login", data);
+export const register = (data) => api.post("/auth/register", data);
+export const getOtp = (data) => api.post("/auth/get-otp", data);
+export const resetPassword = (data) => api.post("/auth/reset-password", data);
+
+// Chat API
+export const createChatSession = (data) => api.post("/chat/new", data);
+export const getChatHistory = (sessionId) => api.get(`/chat/${sessionId}/history`);
+export const sendMessage = (sessionId, data) => api.post(`/chat/${sessionId}/message`, data);
+export const getGrants = () => api.get("/api/announcements");
+
+export const getGrantHistory = async (userId) => {
+  try {
+      // Replace with your actual API endpoint
+      const response = await axios.get(`/api/user-grant-history/${userId}`);
+      console.log(response.data);
+      return response;
+      
+        // The response data will be in response.data
+  } catch (error) {
+      console.error("Error fetching grant history:", error);
+      throw error;  // Throwing the error so it can be caught in the component
+  }
+};
+
+export const recordGrantClick = (userId, grantId) => {
+    return axios.post("/api/record-grant-click", { user_id: userId, grant_id: grantId });
+};
+
+export const saveGrantClick = (userId, grantId) => api.post("/api/grant-history", { userId, grantId });
+export const getGrantDetails = async (grantId) => {
+  const response = await axios.get(`/api/grants/${grantId}`);
+  return response;
+};
+export const toggleNotification = (userId, enabled) => {
+  return api.post("/api/notifications/toggle", { userId, enabled });
+};
+export const fetchNotificationStatus = (userId) =>
+  api.get(`/api/notifications/status/${userId}`);
+
+
+export default api;
+
+app.js:
+// src/App.js
+
+
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Homepage from './pages/Homepage';
+import GrantAI from './pages/GrantAI';
+import GrantTemplates from './pages/GrantTemplates';
+import HistoryTracking from './pages/HistoryTracking';
+import Profile from './pages/Profile';
+import Grants from './pages/Grants';
+import StudentLogin from './pages/StudentLogin'; // Import StudentLogin
+import FacultyLogin from './pages/FacultyLogin'; // Import FacultyLogin
+import Library from './pages/Library';
+import FileUploadButton from './components/FileUploadButton';
+function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(
+        !!localStorage.getItem("userId")
+    );
+    const [userType, setUserType] = useState(localStorage.getItem("userType")); // Track user type
+
+    const handleLogin = (type) => {
+        setIsAuthenticated(true);
+        setUserType(type); // Store user type on login
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userType");
+        setIsAuthenticated(false);
+        setUserType(null);
+    };
+    console.log(userType)
+    return (
+        <Router>
+            <div>
+                {isAuthenticated && <Navbar onLogout={handleLogout} />}
+                <Routes>
+                    {/* Main Route */}
+                    <Route path="/" element={isAuthenticated ? <Homepage /> : <Navigate to="/login" />} />
+
+                    {/* Login Routes */}
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route path="/student-login" element={<StudentLogin onLogin={() => handleLogin("student")} />} />
+                    <Route path="/faculty-login" element={<FacultyLogin onLogin={() => handleLogin("faculty")} />} />
+
+                    {/* Register Route */}
+                    <Route path="/register" element={<Register />} />
+
+                    {/* Protected Routes */}
+                    <Route path="/grant-templates" element={<GrantTemplates />} /> {/* Corrected route for Grant Templates */}
+                    <Route path="/grantai" element={isAuthenticated ? <GrantAI /> : <Navigate to="/login" />} />
+                    <Route path="/history" element={isAuthenticated ? <HistoryTracking /> : <Navigate to="/login" />} />
+                    <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+                    <Route path="/grants" element={isAuthenticated ? <Grants /> : <Navigate to="/login" />} />
+                    <Route path="/FileUploadButton" element={<FileUploadButton />} />
+                    <Route path="/Library" element={<Library />} />
+                    {/* Fallback Route */}
+                    <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} />} />
+                </Routes>
+            </div>
+        </Router>
+    );
+}
+
+export default App;
